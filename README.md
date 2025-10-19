@@ -12,9 +12,10 @@ A modern, production-ready order management application built with **TypeScript*
 
 ## 📋 Table of Contents
 
+- [Quick Start with Docker](#-quick-start-with-docker-recommended)
+- [Quick Start (Manual Setup)](#-quick-start-manual-setup)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
-- [Quick Start](#-quick-start)
 - [Development](#-development)
 - [Testing](#-testing)
 - [API Documentation](#-api-documentation)
@@ -22,6 +23,75 @@ A modern, production-ready order management application built with **TypeScript*
 - [Project Structure](#-project-structure)
 
 ---
+
+## 🐳 Quick Start with Docker (Recommended)
+
+The easiest way to run this project is using Docker Compose. **No need to install PostgreSQL, Node.js, or pnpm manually!**
+
+### Prerequisites
+
+- **Docker Desktop** installed and running
+- **~3GB free disk space** for images and volumes
+
+### Start the Application
+
+```bash
+# Clone the repository
+git clone <repository-url>
+cd RedditTest
+
+# Start all services (PostgreSQL + Backend + Frontend)
+docker-compose up --build
+```
+
+**That's it!** 🎉 The application will be available at:
+
+- 🎨 **Frontend**: http://localhost:5173
+- 🚀 **Backend API**: http://localhost:3000
+- 🗄️ **PostgreSQL**: localhost:5432 (managed by Docker)
+
+The database will be **automatically migrated and seeded** on first run with 10 sample orders.
+
+### Docker Commands
+
+```bash
+# Start services in background
+docker-compose up -d
+
+# View logs (all services)
+docker-compose logs -f
+
+# View logs (specific service)
+docker-compose logs -f backend
+docker-compose logs -f frontend
+
+# Stop services
+docker-compose down
+
+# Stop and remove volumes (cleans database)
+docker-compose down -v
+
+# Restart a specific service
+docker-compose restart backend
+
+# Execute command in container
+docker-compose exec backend pnpm --filter backend test
+docker-compose exec backend pnpm --filter backend prisma:studio
+```
+
+### Hot Reload in Docker
+
+All source code directories are mounted as volumes, so changes to your code will trigger automatic reloads:
+
+- ✅ Backend: `tsx` watch mode automatically restarts on file changes
+- ✅ Frontend: Vite HMR (Hot Module Replacement) updates instantly
+- ✅ Shared Types: Changes reflect immediately in both apps
+
+---
+
+## 💻 Quick Start (Manual Setup)
+
+If you prefer to run without Docker, follow these steps:
 
 ## ✨ Features
 
@@ -74,10 +144,9 @@ A modern, production-ready order management application built with **TypeScript*
 
 ---
 
-## 🚀 Quick Start
+## � Quick Start (Manual Setup)
 
 ### Prerequisites
-
 - **Node.js** >= 18.0.0
 - **pnpm** >= 8.0.0
 - **PostgreSQL** >= 14 (running locally)
@@ -157,23 +226,38 @@ pnpm dev:frontend
 
 ## 💻 Development
 
+> **💡 Tip:** If using Docker, replace `pnpm` commands with `docker-compose exec <service>` (e.g., `docker-compose exec backend pnpm --filter backend test`)
+
 ### Quick Command Reference
 
 ```bash
-# Development
+# Development (Manual)
 pnpm dev:backend                              # Start backend (auto-seeds if empty)
 pnpm dev:frontend                             # Start frontend
 
-# Testing
+# Development (Docker)
+docker-compose up                             # Start all services
+docker-compose up -d                          # Start in background
+docker-compose logs -f backend                # View backend logs
+
+# Testing (Manual)
 pnpm --filter backend test                    # Run backend tests (10 tests)
 pnpm --filter frontend test --run             # Run frontend tests (5 tests)
 
-# Database
+# Testing (Docker)
+docker-compose exec backend pnpm --filter backend test
+docker-compose exec frontend pnpm --filter frontend test --run
+
+# Database (Manual)
 pnpm --filter backend prisma:studio           # Open database GUI (port 5555)
 pnpm --filter backend prisma:generate         # Regenerate Prisma client
 pnpm --filter backend prisma:migrate dev      # Create new migration
 pnpm --filter backend prisma:seed             # Manual seed
 pnpm --filter backend prisma:migrate reset    # ⚠️ Reset database (deletes all data)
+
+# Database (Docker)
+docker-compose exec backend pnpm --filter backend prisma:studio
+docker-compose exec backend pnpm --filter backend prisma:generate
 
 # Build
 pnpm --filter backend build                   # Build backend
@@ -494,16 +578,25 @@ export type ApiResponse<T> = { ... };
 - ✅ Professional error handling
 - ✅ Toast notifications
 - ✅ Postman collection
+- ✅ **Docker setup for easy local development** 🐳
 
 ---
 
 ## 🚨 Important Notes
 
+### Docker vs Manual Setup
+- **Docker**: Zero configuration, all dependencies included, consistent environment
+- **Manual**: More control, faster iterative development, requires PostgreSQL installation
+
 ### Prisma Client Generation
 After modifying `prisma/schema.prisma`, always regenerate the client:
 
 ```bash
+# Manual
 pnpm --filter backend prisma:generate
+
+# Docker
+docker-compose exec backend pnpm --filter backend prisma:generate
 ```
 
 **Symptom of missing generation:** `Property 'order' does not exist on type 'PrismaClient'`
@@ -518,6 +611,12 @@ pnpm install  # Rebuild workspace links
 
 ### Auto-Seeding
 The backend checks if the database is empty and automatically seeds on first run. Manual seeding only needed after database reset.
+
+### Docker Hot Reload
+Changes to source files automatically trigger reloads:
+- **Backend**: `tsx` watch mode restarts on changes
+- **Frontend**: Vite HMR updates instantly
+- **Shared Types**: Changes reflect immediately in both apps
 
 ### Vite Configuration
 This project uses `rolldown-vite@7.1.14` (specified in root `package.json` overrides). If you encounter Vite type errors, ensure `apps/frontend/src/vite-env.d.ts` exists.
