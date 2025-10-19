@@ -37,7 +37,7 @@ export default function ConfirmDialog({
       {trigger(() => setIsOpen(true))}
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black bg-opacity-50"
@@ -45,11 +45,11 @@ export default function ConfirmDialog({
           />
 
           {/* Modal */}
-          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full mx-4 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">{title}</h3>
-            <p className="text-gray-600 mb-6">{message}</p>
+          <div className="relative bg-white rounded-lg shadow-xl max-w-md w-full p-6 z-10">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 text-center">{title}</h3>
+            <p className="text-sm text-gray-600 mb-6 text-center">{message}</p>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-center space-x-3">
               <button
                 onClick={() => setIsOpen(false)}
                 disabled={isLoading}

@@ -64,7 +64,7 @@ export default function OrderDetailsPage() {
               </button>
             )}
             title="Delete Order"
-            message="Are you sure you want to delete this order? This action cannot be undone."
+            message="Delete this order permanently?"
             confirmLabel="Delete"
             onConfirm={async () => {
               await deleteMutation.mutateAsync(id!);
