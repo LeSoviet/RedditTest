@@ -1,23 +1,13 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useOrder, useDeleteOrder } from '../hooks/useOrders';
+import StatusBadge from '../components/StatusBadge';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function OrderDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: order, isLoading, error } = useOrder(id!);
   const deleteMutation = useDeleteOrder();
-
-  const handleDelete = async () => {
-    if (window.confirm(`Delete this order?`)) {
-      try {
-        await deleteMutation.mutateAsync(id!);
-        alert('Order deleted successfully!');
-        navigate('/orders');
-      } catch {
-        alert('Error deleting order');
-      }
-    }
-  };
 
   if (isLoading) return <div className="text-center py-12">Loading...</div>;
   if (error || !order) return <div className="card bg-red-50">Order not found</div>;
@@ -52,7 +42,7 @@ export default function OrderDetailsPage() {
           <div>
             <dt className="text-sm font-medium text-gray-500">Status</dt>
             <dd className="mt-1">
-              <span className="badge bg-blue-100 text-blue-800 text-lg">{order.status}</span>
+              <StatusBadge status={order.status} />
             </dd>
           </div>
           <div>
@@ -67,9 +57,20 @@ export default function OrderDetailsPage() {
           <Link to={`/orders/${id}/edit`} className="btn-primary">
             Edit Order
           </Link>
-          <button onClick={handleDelete} className="btn-danger">
-            Delete Order
-          </button>
+          <ConfirmDialog
+            trigger={(onClick) => (
+              <button onClick={onClick} className="btn-danger">
+                Delete Order
+              </button>
+            )}
+            title="Delete Order"
+            message="Are you sure you want to delete this order? This action cannot be undone."
+            confirmLabel="Delete"
+            onConfirm={async () => {
+              await deleteMutation.mutateAsync(id!);
+              navigate('/orders');
+            }}
+          />
         </div>
       </div>
     </div>

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useOrders, useDeleteOrder } from '../hooks/useOrders';
 import { OrderStatus, type OrderStatusType } from '@shared/types';
+import StatusBadge from '../components/StatusBadge';
+import ConfirmDialog from '../components/ConfirmDialog';
 
 export default function OrdersListPage() {
   const [page, setPage] = useState(1);
@@ -15,30 +17,6 @@ export default function OrdersListPage() {
   });
 
   const deleteMutation = useDeleteOrder();
-
-  const handleDelete = async (id: string, customerName: string) => {
-    if (window.confirm(`Delete order for ${customerName}?`)) {
-      try {
-        await deleteMutation.mutateAsync(id);
-        alert('Order deleted successfully!');
-      } catch {
-        alert('Error deleting order');
-      }
-    }
-  };
-
-  const getStatusBadgeClass = (orderStatus: string) => {
-    switch (orderStatus) {
-      case OrderStatus.COMPLETED:
-        return 'bg-green-100 text-green-800';
-      case OrderStatus.PENDING:
-        return 'bg-yellow-100 text-yellow-800';
-      case OrderStatus.CANCELLED:
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
 
   if (isLoading) {
     return (
@@ -115,9 +93,7 @@ export default function OrdersListPage() {
                     {order.quantity}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`badge ${getStatusBadgeClass(order.status)}`}>
-                      {order.status}
-                    </span>
+                    <StatusBadge status={order.status} />
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(order.created_at).toLocaleDateString()}
@@ -135,12 +111,19 @@ export default function OrdersListPage() {
                     >
                       Edit
                     </Link>
-                    <button
-                      onClick={() => handleDelete(order.id, order.customer_name)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      Delete
-                    </button>
+                    <ConfirmDialog
+                      trigger={(onClick) => (
+                        <button onClick={onClick} className="text-red-600 hover:text-red-900">
+                          Delete
+                        </button>
+                      )}
+                      title="Delete Order"
+                      message={`Are you sure you want to delete the order for ${order.customer_name}? This action cannot be undone.`}
+                      confirmLabel="Delete"
+                      onConfirm={async () => {
+                        await deleteMutation.mutateAsync(order.id);
+                      }}
+                    />
                   </td>
                 </tr>
               ))}

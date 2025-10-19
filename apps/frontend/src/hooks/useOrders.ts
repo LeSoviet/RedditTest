@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 import { ordersApi } from '../services/orders.service';
 import type { CreateOrderDTO, UpdateOrderDTO, OrdersQuery } from '@shared/types';
 
@@ -36,6 +37,10 @@ export const useCreateOrder = () => {
     mutationFn: (data: CreateOrderDTO) => ordersApi.createOrder(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      toast.success('Order created successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to create order');
     },
   });
 };
@@ -50,6 +55,10 @@ export const useUpdateOrder = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
       queryClient.invalidateQueries({ queryKey: orderKeys.detail(variables.id) });
+      toast.success('Order updated successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to update order');
     },
   });
 };
@@ -62,6 +71,10 @@ export const useDeleteOrder = () => {
     mutationFn: (id: string) => ordersApi.deleteOrder(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: orderKeys.lists() });
+      toast.success('Order deleted successfully!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to delete order');
     },
   });
 };
