@@ -89,6 +89,18 @@ pnpm dev:frontend
 
 > **Note:** Make sure PostgreSQL is running before starting the backend server!
 
+### 5. View Database (Optional)
+
+Open **Prisma Studio** to view and edit your database visually (like MongoDB Compass):
+
+```bash
+pnpm --filter backend prisma:studio
+```
+
+🗄️ Prisma Studio: http://localhost:5555
+
+> **Tip:** Prisma Studio provides a user-friendly GUI to browse tables, filter data, edit records, and run queries on your PostgreSQL database.
+
 ## 🧪 API Testing
 
 ### Postman Collection
