@@ -6,10 +6,16 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Seeding database...');
 
-  // Clear existing data
-  await prisma.order.deleteMany();
+  // Check if database already has data
+  const existingOrders = await prisma.order.count();
+  
+  if (existingOrders > 0) {
+    console.log(`📦 Database already has ${existingOrders} orders. Skipping seed.`);
+    console.log('💡 Tip: To reset database, run: pnpm prisma:migrate reset');
+    return;
+  }
 
-  // Create sample orders
+  // Create sample orders only if database is empty
   const orders = [
     {
       customer_name: 'John Doe',

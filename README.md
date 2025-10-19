@@ -65,11 +65,13 @@ pnpm --filter backend prisma:generate
 # Create database and run migrations (creates tables)
 pnpm --filter backend prisma:migrate dev --name init
 
-# Seed database with sample data
+# Seed database with sample data (optional - only if database is empty)
 pnpm --filter backend prisma:seed
 ```
 
 ### 4. Run Application
+
+**Option 1 - Standard (recommended for development):**
 
 **Terminal 1 - Backend:**
 
@@ -77,7 +79,24 @@ pnpm --filter backend prisma:seed
 pnpm dev:backend
 ```
 
+**Terminal 2 - Frontend:**
+
+```bash
+pnpm dev:frontend
+```
+
+**Option 2 - Backend with auto-seed (first time setup):**
+
+If you want to start the backend and automatically seed the database if empty:
+
+```bash
+pnpm --filter backend dev:seed
+```
+
 🚀 Backend: http://localhost:3000
+🎨 Frontend: http://localhost:5173
+
+> **Note:** Your data persists in PostgreSQL. The seed script only adds data if the database is empty. To reset the database, use: `pnpm --filter backend prisma:migrate reset`
 
 **Terminal 2 - Frontend:**
 
