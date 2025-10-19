@@ -23,18 +23,21 @@ pnpm --filter backend prisma:generate
 # Run database migrations
 pnpm --filter backend prisma:migrate dev
 
-# Seed database with sample data
+# (Optional) Seed database - auto-runs on first 'pnpm dev:backend'
 pnpm --filter backend prisma:seed
 ```
 
 ### Daily Development
 ```bash
 # Terminal 1 - Start backend (port 3000)
+# ✨ Auto-seeds database if empty on first run
 pnpm dev:backend
 
 # Terminal 2 - Start frontend (port 5173)
 pnpm dev:frontend
 ```
+
+**Note**: The backend automatically checks if the database is empty and seeds it with 10 sample orders on the first run. No manual seeding required!
 
 ### Testing
 ```bash
@@ -53,7 +56,10 @@ pnpm --filter backend test && pnpm --filter frontend test --run
 # Open Prisma Studio (Database GUI)
 pnpm --filter backend prisma:studio
 
-# Reset database (⚠️ deletes all data)
+# Manually seed database (only needed if you reset it)
+pnpm --filter backend prisma:seed
+
+# Reset database (⚠️ deletes all data, will auto-seed on next dev run)
 pnpm --filter backend prisma:migrate reset
 ```
 

@@ -4,7 +4,8 @@
   "description": "Order Management API with Express and Prisma",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx scripts/dev-with-seed.ts",
+    "dev:simple": "tsx watch src/index.ts",
     "dev:seed": "tsx prisma/seed.ts && tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
