@@ -49,10 +49,9 @@ export const getOrders = async (
     res.json({
       success: true,
       data: {
-        data: orders.map((order: any) => ({
+        data: orders.map((order) => ({
           ...order,
-          created_at:
-            order.created_at instanceof Date ? order.created_at.toISOString() : order.created_at,
+          created_at: order.created_at.toISOString(),
         })),
         pagination: {
           page,
@@ -91,8 +90,7 @@ export const getOrderById = async (
       success: true,
       data: {
         ...order,
-        created_at:
-          order.created_at instanceof Date ? order.created_at.toISOString() : order.created_at,
+        created_at: order.created_at.toISOString(),
       },
     });
   } catch (error) {
