@@ -1,10 +1,11 @@
 # 🚀 Full-Stack Order Management System
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?logo=typescript)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19-61dafb?logo=react)](https://react.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-green?logo=node.js)](https://nodejs.org/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14+-blue?logo=postgresql)](https://www.postgresql.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19.1-61dafb?logo=react)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-22-green?logo=node.js)](https://nodejs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-14-blue?logo=postgresql)](https://www.postgresql.org/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.3-2D3748?logo=prisma)](https://www.prisma.io/)
+[![Vite](https://img.shields.io/badge/Vite-6.0-646CFF?logo=vite)](https://vitejs.dev/)
 
 A modern, production-ready order management application built with **TypeScript**, **React 19**, **Express**, **Prisma**, and **PostgreSQL**. Features complete CRUD operations, pagination, filtering, end-to-end type safety, and professional UX patterns.
 
@@ -52,32 +53,30 @@ docker-compose up --build
 
 The database will be **automatically migrated and seeded** on first run with 10 sample orders.
 
-### Docker Commands
+### Essential Commands
 
 ```bash
-# Start services in background
-docker-compose up -d
+# Start (first time or after changes)
+docker-compose up --build
 
-# View logs (all services)
-docker-compose logs -f
-
-# View logs (specific service)
-docker-compose logs -f backend
-docker-compose logs -f frontend
-
-# Stop services
+# Stop (keeps data)
 docker-compose down
 
-# Stop and remove volumes (cleans database)
-docker-compose down -v
+# View logs
+docker-compose logs -f backend
 
-# Restart a specific service
-docker-compose restart backend
-
-# Execute command in container
+# Run tests
 docker-compose exec backend pnpm --filter backend test
-docker-compose exec backend pnpm --filter backend prisma:studio
+
+# Reset database (⚠️ deletes all data)
+docker-compose down -v && docker-compose up -d
 ```
+
+### 💾 Data Persistence
+- ✅ `docker-compose down` → **Keeps** database data
+- ❌ `docker-compose down -v` → **Deletes** database data
+- First startup auto-seeds 10 sample orders
+- Data persists between restarts
 
 ### Hot Reload in Docker
 

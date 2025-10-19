@@ -1,201 +1,455 @@
-# 🐳 Docker Setup - Quick Reference
+# 🐳 Docker Setup - Quick Reference# 🐳 Docker Setup - Quick Reference
 
-## ⏱️ First Time Setup Timeline
 
-### Initial Build (~5-10 minutes)
-1. **Image Download** (1-2 min)
-   - PostgreSQL 14 Alpine (~230MB)
-   - Node 18 Alpine base (~40MB)
 
-2. **Dependency Installation** (3-5 min)
-   - Backend: 419 packages
-   - Frontend: 400 packages
-   - Shared types dependencies
+## ⏱️ Build Times## ⏱️ Build Times
 
-3. **Build Completion** (1-2 min)
-   - Generate Prisma Client
-   - Copy source code
-   - Set up volumes
+- **First build**: ~5-8 minutes (Node 22 Alpine + PostgreSQL 14 + dependencies)- **First build**: ~5-8 minutes (downloads Node 22 Alpine, PostgreSQL 14, installs dependencies)
 
-### Subsequent Startups (~30 seconds)
-- Images already built
-- Dependencies cached
-- Just starts containers
+- **Subsequent starts**: ~30 seconds (cached images)- **Subsequent starts**: ~30 seconds (uses cached images)
 
----
 
-## 🚀 Common Commands
 
-### Start/Stop
-```powershell
-# Start all services (first time with --build)
-docker compose up --build
+------
 
-# Start in background
-docker compose up -d
 
-# Stop services (keeps data)
-docker compose down
 
-# Stop and remove volumes (deletes database!)
-docker compose down -v
+## 🚀 Essential Commands## 🚀 Essential Commands
 
-# Restart a specific service
-docker compose restart backend
-docker compose restart frontend
-```
 
-### Logs
-```powershell
-# View all logs
-docker compose logs -f
 
-# View specific service
-docker compose logs -f backend
-docker compose logs -f frontend
-docker compose logs -f postgres
+```powershell```powershell
 
-# Last 100 lines
-docker compose logs --tail=100 backend
-```
+# Start/Stop# Start/Stop
 
-### Execute Commands in Containers
-```powershell
-# Run backend tests
-docker compose exec backend pnpm --filter backend test
+docker compose up --build          # Build and start (first time or after code changes)docker compose up --build          # First time or after changes
 
-# Run frontend tests
+docker compose up -d               # Start in backgrounddocker compose up -d               # Background mode
+
+docker compose down                # Stop (⚠️ KEEPS database data)docker compose down                # Stop (keeps data)
+
+docker compose down -v             # Stop + DELETE database datadocker compose down -v             # Stop + delete data
+
+docker compose restart backend     # Restart specific servicedocker compose restart backend     # Restart single service
+
+
+
+# Logs# Logs
+
+docker compose logs -f             # All servicesdocker compose logs -f backend     # Follow backend logs
+
+docker compose logs -f backend     # Specific servicedocker compose logs --tail=50 backend
+
+docker compose logs --tail=50 backend  # Last 50 lines
+
+# Testing
+
+# Testingdocker compose exec backend pnpm --filter backend test
+
+docker compose exec backend pnpm --filter backend testdocker compose exec frontend pnpm --filter frontend test --run
+
 docker compose exec frontend pnpm --filter frontend test --run
 
-# Open Prisma Studio
-docker compose exec backend pnpm --filter backend prisma:studio
+# Database
 
-# Access container shell
-docker compose exec backend sh
-docker compose exec frontend sh
+# Database Managementdocker compose exec backend pnpm --filter backend prisma:studio  # GUI at :5555
 
-# Run database migrations
-docker compose exec backend pnpm --filter backend prisma:migrate dev
+docker compose exec backend pnpm --filter backend prisma:studio  # GUI at :5555docker compose exec backend pnpm --filter backend prisma:seed    # Manual seed
 
-# Seed database manually
-docker compose exec backend pnpm --filter backend prisma:seed
+docker compose exec backend pnpm --filter backend prisma:seed    # Manual seeddocker compose exec postgres psql -U postgres -d orders_db       # SQL shell
+
+docker compose exec postgres psql -U postgres -d orders_db       # Direct SQL access```
+
+
+
+# Shell Access---
+
+docker compose exec backend sh     # Backend container shell
+
+docker compose exec frontend sh    # Frontend container shell## � Data Persistence Explained
+
 ```
 
-### Database Management
-```powershell
-# Reset database (⚠️ deletes all data)
+### How Docker Volumes Work
+
+---
+
+**Volume Definition** (docker-compose.yml):
+
+## 💾 Data Persistence```yaml
+
+volumes:
+
+### How It Works  postgres_data:    # Named volume
+
+PostgreSQL data stored in **named volume**: `reddittest_postgres_data`    driver: local
+
+
+
+| Command | Database Data |services:
+
+|---------|---------------|  postgres:
+
+| `docker compose down` | ✅ **Kept** |    volumes:
+
+| `docker compose restart` | ✅ **Kept** |      - postgres_data:/var/lib/postgresql/data  # Mount point
+
+| `docker compose up --build` | ✅ **Kept** |```
+
+| `docker compose down -v` | ❌ **Deleted** |
+
+| System reboot | ✅ **Kept** |**What Happens**:
+
+1. Docker creates a named volume `reddittest_postgres_data`
+
+### Auto-Seed Behavior2. PostgreSQL writes database files to `/var/lib/postgresql/data` inside container
+
+3. That directory is **mapped** to the Docker volume on your host machine
+
+**First Startup** (empty database):4. Data survives container restarts, rebuilds, and `docker compose down`
+
+```
+
+1. Runs migrations (creates tables)### Data Lifecycle
+
+2. Generates Prisma Client
+
+3. Checks: await prisma.order.count() === 0?| Action | Data Preserved? | Why? |
+
+4. ✅ YES → Seeds 10 sample orders|--------|-----------------|------|
+
+5. Starts server| `docker compose down` | ✅ YES | Only stops containers, volumes remain |
+
+```| `docker compose restart` | ✅ YES | Containers restart, volumes untouched |
+
+| `docker compose up --build` | ✅ YES | Rebuilds images, but volumes persist |
+
+**Subsequent Startups** (data exists):| `docker compose down -v` | ❌ NO | **Explicitly removes volumes** |
+
+```| System reboot | ✅ YES | Volumes stored on disk |
+
+1. Runs migrations (no-op if up-to-date)| Delete containers | ✅ YES | Volumes independent of containers |
+
+2. Generates Prisma Client (cached)
+
+3. Checks: await prisma.order.count() > 0?### When Data Gets Lost
+
+4. ❌ NO → Skips seeding: "📦 Database already has orders"
+
+5. Starts server with existing data**Common Mistakes**:
+
+``````powershell
+
+# ❌ BAD: Removes volumes (loses all data)
+
+### Reset Databasedocker compose down -v
+
+
+
+```powershell# ❌ BAD: Removes all volumes including named ones
+
+# Option 1: Remove volume (cleanest)docker volume prune -a
+
 docker compose down -v
-docker compose up -d postgres
-docker compose exec backend pnpm --filter backend prisma:migrate dev
-docker compose exec backend pnpm --filter backend prisma:seed
 
-# View database with Prisma Studio
-docker compose exec backend pnpm --filter backend prisma:studio
-# Opens at http://localhost:5555
+docker compose up -d  # Auto-seeds again# ✅ GOOD: Stops containers, keeps data
 
-# Access PostgreSQL directly
-docker compose exec postgres psql -U postgres -d orders_db
+docker compose down
+
+# Option 2: Prisma reset (from container)
+
+docker compose exec backend pnpm --filter backend prisma:migrate reset# ✅ GOOD: Restart safely
+
+```docker compose restart
+
 ```
 
 ---
+
+### Auto-Seed Behavior
 
 ## 🔍 Monitoring & Debugging
 
-### Check Container Status
+**First Startup** (empty database):
+
+```powershell```
+
+# Container status1. docker compose up
+
+docker compose ps                  # Running services2. Backend runs: prisma:migrate deploy (creates tables)
+
+docker ps -a                       # All containers3. Backend runs: prisma:generate (generates Prisma Client)
+
+docker stats                       # Resource usage4. Backend runs: dev:seed
+
+5. Seed script checks: prisma.order.count() === 0?
+
+# Build diagnostics6. ✅ YES → Creates 10 sample orders
+
+docker compose build --progress=plain backend7. Server starts
+
+docker compose build --no-cache    # Force rebuild```
+
+
+
+# Inspect services**Subsequent Startups** (data exists):
+
+docker compose config              # View resolved config```
+
+docker inspect orders_backend      # Container details1. docker compose up
+
+docker volume inspect reddittest_postgres_data  # Volume info2. Backend runs: prisma:migrate deploy (no changes)
+
+```3. Backend runs: prisma:generate (already generated)
+
+4. Backend runs: dev:seed
+
+---5. Seed script checks: prisma.order.count() === 10?
+
+6. ❌ NO → Skips seeding, shows message:
+
+## 🐛 Common Issues   "📦 Database already has 10 orders. Skipping seed."
+
+7. Server starts with existing data
+
+### Port Already in Use (3000, 5173, 5432)```
+
 ```powershell
-# List running containers
-docker compose ps
 
-# List all containers (including stopped)
-docker ps -a
+# Find process using port**Why This Design**:
 
-# View container resource usage
-docker stats
+netstat -ano | findstr :3000- ✅ Prevents duplicate data on every restart
+
+- ✅ Development-friendly: Data persists between sessions
+
+# Kill process (replace <PID>)- ✅ Production-safe: Won't accidentally overwrite real data
+
+taskkill /PID <PID> /F- ✅ Can manually seed anytime: `docker compose exec backend pnpm --filter backend prisma:seed`
+
 ```
 
-### View Build Progress
-```powershell
-# Build with progress output
-docker compose build --progress=plain
+### Volume Location on Host
 
-# Build specific service
-docker compose build backend
-docker compose build frontend
-```
+### Build Hanging or Slow
 
-### Inspect Services
-```powershell
-# View service configuration
-docker compose config
+```powershell```powershell
 
-# Inspect specific service
-docker inspect orders_backend
-docker inspect orders_frontend
-docker inspect orders_postgres
+# Clear Docker cache# Find volume location
+
+docker system prune -adocker volume inspect reddittest_postgres_data
+
+
+
+# Check disk space# Typical output:
+
+docker system df"Mountpoint": "/var/lib/docker/volumes/reddittest_postgres_data/_data"
+
+# (On Windows: \\wsl$\docker-desktop-data\data\docker\volumes\...)
+
+# Increase Docker resources: Docker Desktop → Settings → Resources → Memory: 4GB+, CPUs: 2+```
+
 ```
 
 ---
 
-## 🐛 Troubleshooting
+### Database Connection Errors
 
-### Issue: "Cannot connect to Docker daemon"
-**Solution**: Ensure Docker Desktop is running
+```powershell## �🔍 Monitoring & Debugging
+
+# Check PostgreSQL health
+
+docker compose exec postgres pg_isready -U postgres### Check Container Status
+
+```powershell
+
+# View logs# List running containers
+
+docker compose logs postgresdocker compose ps
+
+
+
+# Restart database# List all containers (including stopped)
+
+docker compose restart postgresdocker ps -a
+
+```
+
+# View container resource usage
+
+### Hot Reload Not Workingdocker stats
+
+```powershell```
+
+# Verify volume mounts
+
+docker compose config | Select-String -Pattern "volumes"### View Build Progress
+
+```powershell
+
+# Restart services# Build with progress output
+
+docker compose restart backend frontenddocker compose build --progress=plain
+
+```
+
+# Build specific service
+
+---docker compose build backend
+
+docker compose build frontend
+
+## 📊 Resource Usage (Development)```
+
+
+
+| Service | CPU | Memory | Disk |### Inspect Services
+
+|---------|-----|--------|------|```powershell
+
+| PostgreSQL | 2-5% | 50-100MB | ~100MB |# View service configuration
+
+| Backend | 5-10% | 150-300MB | - |docker compose config
+
+| Frontend | 5-10% | 200-400MB | - |
+
+| **Total** | ~15% | ~600MB | ~1.5GB |# Inspect specific service
+
+docker inspect orders_backend
+
+---docker inspect orders_frontend
+
+docker inspect orders_postgres
+
+## 🧹 Cleanup```
+
+
+
+```powershell---
+
+# Remove stopped containers
+
+docker compose down## 🐛 Troubleshooting
+
+
+
+# Remove volumes (⚠️ deletes database)### Issue: "Cannot connect to Docker daemon"
+
+docker compose down -v**Solution**: Ensure Docker Desktop is running
+
 - Check system tray for Docker icon
-- Open Docker Desktop application
-- Wait for "Docker Desktop is running" message
 
-### Issue: "Port is already allocated" (3000, 5173, or 5432)
-**Solution**: Stop the conflicting service
-```powershell
-# Find process using port 3000
-netstat -ano | findstr :3000
+# Remove all unused Docker resources- Open Docker Desktop application
+
+docker system prune -a --volumes- Wait for "Docker Desktop is running" message
+
+
+
+# Free up space### Issue: "Port is already allocated" (3000, 5173, or 5432)
+
+docker system prune -a              # Remove unused images/containers**Solution**: Stop the conflicting service
+
+docker volume prune                 # Remove unused volumes```powershell
+
+docker builder prune                # Remove build cache# Find process using port 3000
+
+```netstat -ano | findstr :3000
+
 # Kill the process (replace PID with actual number)
-taskkill /PID <PID> /F
 
-# Or change ports in docker-compose.yml
+---taskkill /PID <PID> /F
+
+
+
+## 📦 Tech Stack Versions# Or change ports in docker-compose.yml
+
 ports:
-  - "3001:3000"  # Maps host 3001 to container 3000
-```
 
-### Issue: Build is slow or hanging
-**Possible causes**:
-1. **Slow internet** - Downloading packages from npm
-2. **Low disk space** - Need ~5GB free
-3. **Resource limits** - Increase Docker Desktop memory/CPU
+- **Node.js**: 22-alpine  - "3001:3000"  # Maps host 3001 to container 3000
+
+- **PostgreSQL**: 14-alpine```
+
+- **pnpm**: latest (via corepack)
+
+- **React**: 19.1.1### Issue: Build is slow or hanging
+
+- **Vite**: 6.0.10**Possible causes**:
+
+- **TypeScript**: 5.9.31. **Slow internet** - Downloading packages from npm
+
+- **Prisma**: 6.3.02. **Low disk space** - Need ~5GB free
+
+- **Express**: 4.21.23. **Resource limits** - Increase Docker Desktop memory/CPU
+
    - Open Docker Desktop → Settings → Resources
-   - Increase Memory to 4GB+ and CPUs to 2+
 
-**Solutions**:
+---   - Increase Memory to 4GB+ and CPUs to 2+
+
+
+
+## 🔗 Quick Links**Solutions**:
+
 ```powershell
-# Clear Docker cache
-docker system prune -a
 
-# Rebuild without cache
-docker compose build --no-cache
+- **Frontend**: http://localhost:5173# Clear Docker cache
 
-# Check disk space
+- **Backend API**: http://localhost:3000docker system prune -a
+
+- **Health Check**: http://localhost:3000/health
+
+- **Prisma Studio**: http://localhost:5555 (run `docker compose exec backend pnpm --filter backend prisma:studio`)# Rebuild without cache
+
+- **PostgreSQL**: localhost:5432 (user: `postgres`, pass: `postgres`, db: `orders_db`)docker compose build --no-cache
+
+
+
+---# Check disk space
+
 docker system df
-```
 
-### Issue: "pnpm: not found" or package installation fails
-**Solution**: Rebuild images from scratch
-```powershell
-docker compose down
+## 🎯 Development Workflow```
+
+
+
+```powershell### Issue: "pnpm: not found" or package installation fails
+
+# Day 1: Initial setup**Solution**: Rebuild images from scratch
+
+docker compose up --build```powershell
+
+# ✅ Database auto-migrated and seededdocker compose down
+
 docker compose build --no-cache
-docker compose up
-```
+
+# Day 2+: Continue developmentdocker compose up
+
+docker compose up```
+
+# ✅ Data persists, no re-seeding
 
 ### Issue: Database connection errors
-**Check PostgreSQL health**:
-```powershell
-# View PostgreSQL logs
+
+# After code changes**Check PostgreSQL health**:
+
+docker compose restart backend     # If backend changed```powershell
+
+docker compose restart frontend    # If frontend changed# View PostgreSQL logs
+
 docker compose logs postgres
 
-# Test connection
+# After dependency changes
+
+docker compose up --build          # Rebuild images# Test connection
+
 docker compose exec postgres pg_isready -U postgres
 
-# Restart database
-docker compose restart postgres
+# End of day
+
+docker compose down                # Stop, keep data# Restart database
+
+# ORdocker compose restart postgres
+
+docker compose down -v             # Stop, delete data (fresh start next time)```
+
 ```
 
 ### Issue: Hot reload not working
