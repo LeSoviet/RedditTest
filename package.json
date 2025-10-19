@@ -1,0 +1,40 @@
+{
+  "name": "fullstack-order-management",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Full-Stack TypeScript Order Management System - Technical Challenge",
+  "author": "Daniel Khadour",
+  "keywords": [
+    "typescript",
+    "react",
+    "node",
+    "express",
+    "prisma",
+    "postgresql",
+    "fullstack"
+  ],
+  "scripts": {
+    "dev:backend": "pnpm --filter backend dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "build:backend": "pnpm --filter backend build",
+    "build:frontend": "pnpm --filter frontend build",
+    "test:backend": "pnpm --filter backend test",
+    "test:frontend": "pnpm --filter frontend test",
+    "test": "pnpm test:backend && pnpm test:frontend",
+    "lint": "pnpm -r lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "pnpm": {
+    "overrides": {
+      "vite": "npm:rolldown-vite@7.1.14"
+    }
+  }
+}

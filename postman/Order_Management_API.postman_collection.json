@@ -1,0 +1,449 @@
+{
+  "info": {
+    "name": "Order Management API",
+    "description": "Complete API for Order Management System with pagination, filtering and CRUD operations",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "exec": [
+          "// Global pre-request script",
+          "console.log('🚀 Running Order Management API Tests');"
+        ],
+        "type": "text/javascript"
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Server is healthy', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ Response has correct structure', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('status', 'ok');",
+              "    pm.expect(responseJson).to.have.property('message');",
+              "});",
+              "",
+              "console.log('✅ Health check passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/health",
+          "host": ["{{BASE_URL}}"],
+          "path": ["health"]
+        }
+      }
+    },
+    {
+      "name": "Get All Orders (Paginated)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Get orders returns 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ Response has correct pagination structure', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson).to.have.property('data');",
+              "    pm.expect(responseJson.data).to.have.property('data');",
+              "    pm.expect(responseJson.data).to.have.property('pagination');",
+              "    ",
+              "    const pagination = responseJson.data.pagination;",
+              "    pm.expect(pagination).to.have.property('page');",
+              "    pm.expect(pagination).to.have.property('page_size');",
+              "    pm.expect(pagination).to.have.property('total');",
+              "    pm.expect(pagination).to.have.property('total_pages');",
+              "});",
+              "",
+              "pm.test('✅ Orders have correct structure', function () {",
+              "    const responseJson = pm.response.json();",
+              "    const orders = responseJson.data.data;",
+              "    ",
+              "    if (orders.length > 0) {",
+              "        const firstOrder = orders[0];",
+              "        pm.expect(firstOrder).to.have.property('id');",
+              "        pm.expect(firstOrder).to.have.property('customer_name');",
+              "        pm.expect(firstOrder).to.have.property('item');",
+              "        pm.expect(firstOrder).to.have.property('quantity');",
+              "        pm.expect(firstOrder).to.have.property('status');",
+              "        pm.expect(firstOrder).to.have.property('created_at');",
+              "        ",
+              "        // Store first order ID for later tests",
+              "        pm.environment.set('FIRST_ORDER_ID', firstOrder.id);",
+              "        console.log('📝 Stored order ID:', firstOrder.id);",
+              "    }",
+              "});",
+              "",
+              "console.log('✅ Get all orders test passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders?page=1&page_size=10",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"],
+          "query": [
+            {
+              "key": "page",
+              "value": "1",
+              "description": "Page number (default: 1)"
+            },
+            {
+              "key": "page_size",
+              "value": "10",
+              "description": "Items per page (default: 10, max: 100)"
+            },
+            {
+              "key": "status",
+              "value": "",
+              "description": "Filter by status: PENDING, COMPLETED, CANCELLED",
+              "disabled": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Orders - Filter by Status (Pending)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Filter by pending status returns 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ All returned orders have pending status', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    ",
+              "    const orders = responseJson.data.data;",
+              "    orders.forEach(function(order) {",
+              "        pm.expect(order).to.have.property('status', 'PENDING');",
+              "    });",
+              "});",
+              "",
+              "console.log('✅ Filter pending test passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders?status=PENDING",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"],
+          "query": [
+            {
+              "key": "status",
+              "value": "PENDING"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Orders - Filter by Status (Completed)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Filter by completed status returns 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ All returned orders have completed status', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    ",
+              "    const orders = responseJson.data.data;",
+              "    orders.forEach(function(order) {",
+              "        pm.expect(order).to.have.property('status', 'COMPLETED');",
+              "    });",
+              "});",
+              "",
+              "console.log('✅ Filter completed test passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders?status=COMPLETED",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"],
+          "query": [
+            {
+              "key": "status",
+              "value": "COMPLETED"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Order by ID",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Use the created order ID or first order ID",
+              "const createdOrderId = pm.environment.get('CREATED_ORDER_ID');",
+              "const firstOrderId = pm.environment.get('FIRST_ORDER_ID');",
+              "const orderId = createdOrderId || firstOrderId;",
+              "",
+              "if (orderId) {",
+              "    pm.environment.set('ORDER_ID', orderId);",
+              "    console.log('🔍 Using order ID:', orderId);",
+              "} else {",
+              "    console.log('⚠️ No order ID available, test may fail');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Get order by ID returns 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ Order has correct structure', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson).to.have.property('data');",
+              "    ",
+              "    const order = responseJson.data;",
+              "    pm.expect(order).to.have.property('id');",
+              "    pm.expect(order).to.have.property('customer_name');",
+              "    pm.expect(order).to.have.property('item');",
+              "    pm.expect(order).to.have.property('quantity');",
+              "    pm.expect(order).to.have.property('status');",
+              "    pm.expect(order).to.have.property('created_at');",
+              "});",
+              "",
+              "console.log('✅ Get order by ID test passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders/{{ORDER_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders", "{{ORDER_ID}}"]
+        }
+      }
+    },
+    {
+      "name": "Create Order",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Order created successfully', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('✅ Created order has correct structure', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson).to.have.property('data');",
+              "    ",
+              "    const order = responseJson.data;",
+              "    pm.expect(order).to.have.property('id');",
+              "    pm.expect(order).to.have.property('customer_name', 'John Doe');",
+              "    pm.expect(order).to.have.property('item', 'MacBook Pro M3');",
+              "    pm.expect(order).to.have.property('quantity', 2);",
+              "    pm.expect(order).to.have.property('status', 'PENDING');",
+              "    pm.expect(order).to.have.property('created_at');",
+              "    ",
+              "    // Store created order ID for update/delete tests",
+              "    pm.environment.set('CREATED_ORDER_ID', order.id);",
+              "    console.log('📝 Created order ID:', order.id);",
+              "});",
+              "",
+              "console.log('✅ Create order test passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customer_name\": \"John Doe\",\n  \"item\": \"MacBook Pro M3\",\n  \"quantity\": 2,\n  \"status\": \"PENDING\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders"]
+        }
+      }
+    },
+    {
+      "name": "Update Order",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Use the created order ID for update",
+              "const createdOrderId = pm.environment.get('CREATED_ORDER_ID');",
+              "if (createdOrderId) {",
+              "    pm.environment.set('ORDER_ID', createdOrderId);",
+              "    console.log('🔄 Updating order ID:', createdOrderId);",
+              "} else {",
+              "    console.log('⚠️ No created order ID available for update');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Order updated successfully', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ Updated order has correct structure', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson).to.have.property('data');",
+              "    ",
+              "    const order = responseJson.data;",
+              "    pm.expect(order).to.have.property('id');",
+              "    pm.expect(order).to.have.property('customer_name', 'John Doe Updated');",
+              "    pm.expect(order).to.have.property('quantity', 5);",
+              "    pm.expect(order).to.have.property('status', 'COMPLETED');",
+              "});",
+              "",
+              "console.log('✅ Update order test passed');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"customer_name\": \"John Doe Updated\",\n  \"quantity\": 5,\n  \"status\": \"COMPLETED\"\n}"
+        },
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders/{{ORDER_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders", "{{ORDER_ID}}"]
+        }
+      }
+    },
+    {
+      "name": "Delete Order",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Use the created order ID for deletion",
+              "const createdOrderId = pm.environment.get('CREATED_ORDER_ID');",
+              "if (createdOrderId) {",
+              "    pm.environment.set('ORDER_ID', createdOrderId);",
+              "    console.log('🗑️ Deleting order ID:', createdOrderId);",
+              "} else {",
+              "    console.log('⚠️ No created order ID available for deletion');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('✅ Order deleted successfully', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('✅ Delete response has correct structure', function () {",
+              "    const responseJson = pm.response.json();",
+              "    pm.expect(responseJson).to.have.property('success', true);",
+              "    pm.expect(responseJson).to.have.property('data');",
+              "    pm.expect(responseJson.data).to.have.property('id');",
+              "});",
+              "",
+              "// Clean up environment variables",
+              "pm.environment.unset('CREATED_ORDER_ID');",
+              "pm.environment.unset('ORDER_ID');",
+              "console.log('✅ Delete order test passed and variables cleaned up');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{BASE_URL}}/api/orders/{{ORDER_ID}}",
+          "host": ["{{BASE_URL}}"],
+          "path": ["api", "orders", "{{ORDER_ID}}"]
+        }
+      }
+    }
+  ]
+}
