@@ -48,7 +48,7 @@ When you run the collection:
 ## 🔧 Environment Variables
 
 | Variable           | Value                   | Description                |
-| ------------------ | ----------------------- | -------------------------- |
+|--------------------|-------------------------|----------------------------|
 | `BASE_URL`         | `http://localhost:3000` | API server URL             |
 | `ORDER_ID`         | _auto-set_              | Used for get/update/delete |
 | `CREATED_ORDER_ID` | _auto-set_              | Tracks created orders      |
@@ -69,16 +69,6 @@ This ensures type safety and consistency across the application.
 ## 🧪 Manual Testing
 
 If you prefer individual requests:
-
-1. **Health Check** → Verify server running
-2. **Get All Orders** → See existing data
-3. **Create Order** → Add new order
-4. **Get Order by ID** → Retrieve specific order
-5. **Update Order** → Modify order
-6. **Filter Orders** → Test status filtering
-7. **Delete Order** → Remove order
-
-**Ready to test!** 🚀
 
 1. **Health Check** → Verify server running
 2. **Get All Orders** → See existing data

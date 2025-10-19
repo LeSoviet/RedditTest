@@ -161,7 +161,7 @@ postman/              # API testing collection
 
 - `page` - Page number (default: 1)
 - `page_size` - Items per page (default: 10, max: 100)
-- `status` - Filter by status (`pending`, `completed`, `cancelled`)
+- `status` - Filter by status (`PENDING`, `COMPLETED`, `CANCELLED`)
 
 ## 🛠️ Development
 
