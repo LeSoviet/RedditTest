@@ -13,25 +13,22 @@ pnpm-lock.yaml
 
 # Build output
 dist
-dist-ssr
-*.local
 
 # Environment
 .env
 .env.local
 .env.*.local
 .env.production
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+.env.test
 
 # TypeScript
 *.tsbuildinfo
+
+# Prisma
+prisma/migrations/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
