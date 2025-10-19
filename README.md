@@ -114,7 +114,7 @@ Content-Type: application/json
   "customer_name": "John Doe",
   "item": "MacBook Pro",
   "quantity": 2,
-  "status": "pending"
+  "status": "PENDING"
 }
 ```
 

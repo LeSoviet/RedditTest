@@ -49,7 +49,11 @@ export const getOrders = async (
     res.json({
       success: true,
       data: {
-        data: orders as Order[],
+        data: orders.map((order: any) => ({
+          ...order,
+          created_at:
+            order.created_at instanceof Date ? order.created_at.toISOString() : order.created_at,
+        })),
         pagination: {
           page,
           page_size,
@@ -85,7 +89,11 @@ export const getOrderById = async (
 
     res.json({
       success: true,
-      data: order as Order,
+      data: {
+        ...order,
+        created_at:
+          order.created_at instanceof Date ? order.created_at.toISOString() : order.created_at,
+      },
     });
   } catch (error) {
     next(error);
@@ -111,7 +119,11 @@ export const createOrder = async (
 
     res.status(201).json({
       success: true,
-      data: order as Order,
+      data: {
+        ...order,
+        created_at:
+          order.created_at instanceof Date ? order.created_at.toISOString() : order.created_at,
+      },
       message: 'Order created successfully',
     });
   } catch (error) {
@@ -150,7 +162,11 @@ export const updateOrder = async (
 
     res.json({
       success: true,
-      data: order as Order,
+      data: {
+        ...order,
+        created_at:
+          order.created_at instanceof Date ? order.created_at.toISOString() : order.created_at,
+      },
       message: 'Order updated successfully',
     });
   } catch (error) {

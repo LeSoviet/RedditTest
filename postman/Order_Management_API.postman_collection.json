@@ -121,7 +121,7 @@
             {
               "key": "status",
               "value": "",
-              "description": "Filter by status: pending, completed, cancelled",
+              "description": "Filter by status: PENDING, COMPLETED, CANCELLED",
               "disabled": true
             }
           ]
